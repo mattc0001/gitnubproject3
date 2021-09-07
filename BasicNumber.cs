@@ -56,5 +56,8 @@ namespace SuperBASIC
 				return runtime.GetRegister();
 			}
 		}
+
+		public static implicit operator float(BasicNumber v) => v.GetValue();
+		public override string ToString() => $"{number}";
 	}
 }

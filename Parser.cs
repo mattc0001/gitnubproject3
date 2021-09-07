@@ -36,26 +36,34 @@ namespace SuperBASIC
 			Regex leadings = new Regex(@"^\s+");
 			Regex trailings = new Regex(@"\s+$");
 			List<string> codeLines = new List<string>();
+			List<int> lineSpans = new List<int>();
 
+			int a = 0;
 			foreach (string line in sourceLines)
 			{
+				a++;
 				string l = lws.Replace(line, " ");
 				l = leadings.Replace(l, "");
 				l = trailings.Replace(l, "");
 
 				if(l != String.Empty)
 				{
+					lineSpans.Add(a);
+					a = 0;
 					codeLines.Add(l);
 				}
 			}
 
-			foreach(string line in codeLines)
+			for(int idx = 0; idx < codeLines.Count; idx++)
 			{
+				string line = codeLines[idx];
 				var components = line.Split(' ');
 
 				if(!library.nameResolution.ContainsKey(components[0]))
 				{
-					throw new ParseException("Unknown operation \"" + components[0] + "\"");
+					int lineIndex = 0;
+					foreach (int cnt in lineSpans.GetRange(0, idx)) lineIndex += cnt;
+					throw new ParseException($"Unknown operation \"{components[0]}\"\n\tat line {lineIndex}");
 				}
 
 				int opcode = library.nameResolution[components[0]];
@@ -63,7 +71,9 @@ namespace SuperBASIC
 
 				if(arity != components.Length-1)
 				{
-					throw new ParseException("Operation " + components[0] + " was provided with the wrong number of arguments: Expected "+arity.ToString()+" found "+(components.Length-1).ToString());
+					int lineIndex = 0;
+					foreach (int cnt in lineSpans.GetRange(0, idx)) lineIndex += cnt;
+					throw new ParseException($"Operation {components[0]} was provided with the wrong number of arguments\n\tExpected {arity} found {components.Length-1}\n\tat line {lineIndex}");
 				}
 
 				c.bytecode.Add(new BasicNumber(runtime, opcode));
