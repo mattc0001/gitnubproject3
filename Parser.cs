@@ -62,7 +62,7 @@ namespace SuperBASIC
 				if(!library.nameResolution.ContainsKey(components[0]))
 				{
 					int lineIndex = 0;
-					foreach (int cnt in lineSpans.GetRange(0, idx)) lineIndex += cnt;
+					foreach (int cnt in lineSpans.GetRange(0, idx+1)) lineIndex += cnt;
 					throw new ParseException($"Unknown operation \"{components[0]}\"\n\tat line {lineIndex}");
 				}
 
@@ -72,7 +72,7 @@ namespace SuperBASIC
 				if(arity != components.Length-1)
 				{
 					int lineIndex = 0;
-					foreach (int cnt in lineSpans.GetRange(0, idx)) lineIndex += cnt;
+					foreach (int cnt in lineSpans.GetRange(0, idx+1)) lineIndex += cnt;
 					throw new ParseException($"Operation {components[0]} was provided with the wrong number of arguments\n\tExpected {arity} found {components.Length-1}\n\tat line {lineIndex}");
 				}
 
@@ -81,7 +81,16 @@ namespace SuperBASIC
 				{
 					if (elem != "$")
 					{
-						c.bytecode.Add(new BasicNumber(runtime, float.Parse(elem)));
+						try
+						{
+							float v = float.Parse(elem);
+							c.bytecode.Add(new BasicNumber(runtime, v));
+						}
+						catch(Exception) {
+							int lineIndex = 0;
+							foreach (int cnt in lineSpans.GetRange(0, idx+1)) lineIndex += cnt;
+							throw new ParseException($"Cannot parse {elem} as argument\n\tExpected floating point number or '$'\n\tat line {lineIndex}");
+						}
 					}
 					else
 					{
