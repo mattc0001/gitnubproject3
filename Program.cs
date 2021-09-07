@@ -10,15 +10,24 @@ namespace SuperBASIC
 			try
 			{
 				Library lib = new Library();
+#if MEMORY
 				lib.AddFunction(new Functions.MemoryLoad(), 1, "MEMLOAD");
 				lib.AddFunction(new Functions.MemoryStore(), 2, "MEMSTORE");
+#endif
 				lib.AddFunction(new Functions.Print(), 1, "PRINT");
 				lib.AddFunction(new Functions.Multiply(), 2, "MULTIPLY");
 				lib.AddFunction(new Functions.Compare(), 2, "COMPARE");
 				lib.AddFunction(new Functions.Pi(), 0, "PI");
 				lib.AddFunction(new Functions.Euler(), 0, "EULER");
 				Runtime r = new Runtime(lib);
-				r.OpenFile(Directory.GetCurrentDirectory() + "\\Test.basic");
+				if (args.Length <= 1)
+				{
+					r.OpenFile(Directory.GetCurrentDirectory() + "\\Test.basic");
+				} 
+				else
+				{
+					r.OpenFile(args[1]);
+				}
 				r.Run();
 			} catch (Parser.ParseException e)
 			{

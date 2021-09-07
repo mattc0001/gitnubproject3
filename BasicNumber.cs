@@ -79,10 +79,14 @@ namespace SuperBASIC
 			{
 				return runtime.GetRegister();
 			}
+#if MEMORY
 			else
 			{
 				return Functions.Memory.MemoryGet((short)operand);
 			}
+#else
+			return 0;
+#endif
 		}
 
 		public static implicit operator float(BasicNumber v) => v.GetValue();

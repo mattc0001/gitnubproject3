@@ -4,6 +4,7 @@ using System.Text;
 
 namespace SuperBASIC.Functions
 {
+#if MEMORY
 	static class Memory
 	{
 		internal static float[] memory = new float[Int16.MaxValue];
@@ -53,4 +54,5 @@ namespace SuperBASIC.Functions
 			throw new Memory.BadMemoryAccess("Could not access requested memory");
 		}
 	}
+#endif
 }

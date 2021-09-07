@@ -79,6 +79,7 @@ namespace SuperBASIC
 				c.bytecode.Add(new BasicNumber(runtime, opcode));
 				foreach (string elem in components.AsSpan(1))
 				{
+#if MEMORY
 					if (elem.StartsWith("M"))
 					{
 						try
@@ -93,7 +94,9 @@ namespace SuperBASIC
 							throw new ParseException($"Cannot parse {elem} as argument to memory address\n\tExpected 'M' followed by an integer lower than {Int16.MaxValue}\n\tat line {lineIndex}");
 						}
 					}
-					else if (elem == "$")
+					else
+#endif
+					if (elem == "$")
 					{
 						c.bytecode.Add(new BasicNumber(runtime));
 					}
