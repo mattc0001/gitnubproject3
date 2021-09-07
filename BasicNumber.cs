@@ -15,7 +15,7 @@ namespace SuperBASIC
 	{
 		internal NumberType type;
 
-		readonly Runtime runtime;
+		internal Runtime runtime;
 		readonly private float number;
 		readonly private int operand;
 
@@ -90,6 +90,6 @@ namespace SuperBASIC
 		}
 
 		public static implicit operator float(BasicNumber v) => v.GetValue();
-		public override string ToString() => $"{number}";
+		public override string ToString() => $"{GetValue()}";
 	}
 }

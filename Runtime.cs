@@ -9,6 +9,7 @@ namespace SuperBASIC
 		float register;
 		internal Library lib;
 		Bytecode code;
+		internal int pc = 0;
 
 		public Runtime(Library library)
 		{
@@ -22,14 +23,14 @@ namespace SuperBASIC
 
 		public void Run()
 		{
-			for(int idx = 0; idx < code.bytecode.Count;)
+			for(pc = 0; pc < code.bytecode.Count;)
 			{
-				int opcode = code.bytecode[idx].GetOperand();
+				int opcode = code.bytecode[pc].GetOperand();
 				int arity = lib.arities[opcode];
 				IFunction op = lib.functions[opcode];
-				var args = code.bytecode.GetRange(idx + 1, arity);
+				var args = code.bytecode.GetRange(pc + 1, arity);
 				SetRegister(op.Apply(args));
-				idx += arity + 1;
+				pc += arity + 1;
 			}
 		}
 

@@ -17,6 +17,8 @@ namespace SuperBASIC
 				lib.AddFunction(new Functions.Print(), 1, "PRINT");
 				lib.AddFunction(new Functions.Multiply(), 2, "MULTIPLY");
 				lib.AddFunction(new Functions.Compare(), 2, "COMPARE");
+				lib.AddFunction(new Functions.JumpZero(), 2, "JZ");
+				lib.AddFunction(new Functions.Goto(), 1, "GOTO");
 				lib.AddFunction(new Functions.Pi(), 0, "PI");
 				lib.AddFunction(new Functions.Euler(), 0, "EULER");
 				Runtime r = new Runtime(lib);
