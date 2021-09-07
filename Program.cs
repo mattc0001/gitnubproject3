@@ -10,6 +10,8 @@ namespace SuperBASIC
 			try
 			{
 				Library lib = new Library();
+				lib.AddFunction(new Functions.MemoryLoad(), 1, "MEMLOAD");
+				lib.AddFunction(new Functions.MemoryStore(), 2, "MEMSTORE");
 				lib.AddFunction(new Functions.Print(), 1, "PRINT");
 				lib.AddFunction(new Functions.Multiply(), 2, "MULTIPLY");
 				lib.AddFunction(new Functions.Compare(), 2, "COMPARE");

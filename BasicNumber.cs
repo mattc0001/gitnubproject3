@@ -7,7 +7,8 @@ namespace SuperBASIC
 	enum NumberType{
 		Ans,
 		Number,
-		Operand
+		Operand,
+		Memory
 	};
 
 	struct BasicNumber
@@ -17,6 +18,18 @@ namespace SuperBASIC
 		readonly Runtime runtime;
 		readonly private float number;
 		readonly private int operand;
+
+
+		[Serializable]
+		public class BadNumber : Exception
+		{
+			public BadNumber() { }
+			public BadNumber(string message) : base(message) { }
+			public BadNumber(string message, Exception inner) : base(message, inner) { }
+			protected BadNumber(
+			  System.Runtime.Serialization.SerializationInfo info,
+			  System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+		}
 
 		internal BasicNumber(Runtime rt, float v)
 		{
@@ -32,12 +45,23 @@ namespace SuperBASIC
 			operand = 0;
 			runtime = rt;
 		}
-		internal BasicNumber(Runtime rt, int v)
+		internal BasicNumber(Runtime rt, int v, NumberType reqType = NumberType.Operand)
 		{
-			type = NumberType.Operand;
-			number = 0;
-			operand = v;
-			runtime = rt;
+			if(reqType == NumberType.Operand)
+			{
+				type = NumberType.Operand;
+				number = 0;
+				operand = v;
+				runtime = rt;
+			} 
+			else
+			{
+				type = NumberType.Memory;
+				number = 0;
+				if (v > Int16.MaxValue) throw new BadNumber("Generated out of memory access");
+				operand = v;
+				runtime = rt;
+			}
 		}
 
 		internal int GetOperand()
@@ -51,9 +75,13 @@ namespace SuperBASIC
 			{
 				return number;
 			} 
-			else
+			else if(type == NumberType.Ans)
 			{
 				return runtime.GetRegister();
+			}
+			else
+			{
+				return Functions.Memory.MemoryGet((short)operand);
 			}
 		}
 

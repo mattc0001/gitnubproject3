@@ -46,7 +46,7 @@ namespace SuperBASIC
 				l = leadings.Replace(l, "");
 				l = trailings.Replace(l, "");
 
-				if(l != String.Empty)
+				if (l != String.Empty)
 				{
 					lineSpans.Add(a);
 					a = 0;
@@ -54,47 +54,63 @@ namespace SuperBASIC
 				}
 			}
 
-			for(int idx = 0; idx < codeLines.Count; idx++)
+			for (int idx = 0; idx < codeLines.Count; idx++)
 			{
 				string line = codeLines[idx];
 				var components = line.Split(' ');
 
-				if(!library.nameResolution.ContainsKey(components[0]))
+				if (!library.nameResolution.ContainsKey(components[0]))
 				{
 					int lineIndex = 0;
-					foreach (int cnt in lineSpans.GetRange(0, idx+1)) lineIndex += cnt;
+					foreach (int cnt in lineSpans.GetRange(0, idx + 1)) lineIndex += cnt;
 					throw new ParseException($"Unknown operation \"{components[0]}\"\n\tat line {lineIndex}");
 				}
 
 				int opcode = library.nameResolution[components[0]];
 				int arity = library.arities[opcode];
 
-				if(arity != components.Length-1)
+				if (arity != components.Length - 1)
 				{
 					int lineIndex = 0;
-					foreach (int cnt in lineSpans.GetRange(0, idx+1)) lineIndex += cnt;
-					throw new ParseException($"Operation {components[0]} was provided with the wrong number of arguments\n\tExpected {arity} found {components.Length-1}\n\tat line {lineIndex}");
+					foreach (int cnt in lineSpans.GetRange(0, idx + 1)) lineIndex += cnt;
+					throw new ParseException($"Operation {components[0]} was provided with the wrong number of arguments\n\tExpected {arity} found {components.Length - 1}\n\tat line {lineIndex}");
 				}
 
 				c.bytecode.Add(new BasicNumber(runtime, opcode));
 				foreach (string elem in components.AsSpan(1))
 				{
-					if (elem != "$")
+					if (elem.StartsWith("M"))
+					{
+						try
+						{
+							Int16 v = Int16.Parse(elem[1..]);
+							c.bytecode.Add(new BasicNumber(runtime, v, NumberType.Memory));
+						}
+						catch (Exception)
+						{
+							int lineIndex = 0;
+							foreach (int cnt in lineSpans.GetRange(0, idx + 1)) lineIndex += cnt;
+							throw new ParseException($"Cannot parse {elem} as argument to memory address\n\tExpected 'M' followed by an integer lower than {Int16.MaxValue}\n\tat line {lineIndex}");
+						}
+					}
+					else if (elem == "$")
+					{
+						c.bytecode.Add(new BasicNumber(runtime));
+					}
+					else
 					{
 						try
 						{
 							float v = float.Parse(elem);
 							c.bytecode.Add(new BasicNumber(runtime, v));
 						}
-						catch(Exception) {
+						catch (Exception)
+						{
 							int lineIndex = 0;
-							foreach (int cnt in lineSpans.GetRange(0, idx+1)) lineIndex += cnt;
-							throw new ParseException($"Cannot parse {elem} as argument\n\tExpected floating point number or '$'\n\tat line {lineIndex}");
+							foreach (int cnt in lineSpans.GetRange(0, idx + 1)) lineIndex += cnt;
+							throw new ParseException($"Cannot parse {elem} as argument\n\tExpected floating point number or '$' or memory argument\n\tat line {lineIndex}");
 						}
-					}
-					else
-					{
-						c.bytecode.Add(new BasicNumber(runtime));
+
 					}
 				}
 			}
