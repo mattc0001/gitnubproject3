@@ -22,6 +22,8 @@ namespace SuperBASIC
 
 		readonly Library library;
 		readonly Runtime runtime;
+		Dictionary<string, int> namedLabels;
+		List<Tuple<string, int>> positionedLabels;
 		public Parser(Runtime rt)
 		{
 			runtime = rt;
@@ -78,7 +80,12 @@ namespace SuperBASIC
 					}
 					else
 #endif
-					if (elem == "$")
+					if (namedLabels.ContainsKey(elem))
+					{
+						positionedLabels.Add(new Tuple<string, int>(elem, c.bytecode.Count));
+						c.bytecode.Add(new BasicNumber(runtime, (float)namedLabels[elem]));
+					}
+					else if (elem == "$")
 					{
 						c.bytecode.Add(new BasicNumber(runtime));
 					}
@@ -117,6 +124,8 @@ namespace SuperBASIC
 			List<string> codeLines = new List<string>();
 			List<int> lineSpans = new List<int>();
 			Stack<FlowControlTag> labelStack = new Stack<FlowControlTag>();
+			namedLabels = new Dictionary<string, int>();
+			positionedLabels = new List<Tuple<string, int>>();
 
 			int a = 0;
 			foreach (string line in sourceLines)
@@ -134,6 +143,23 @@ namespace SuperBASIC
 				}
 			}
 
+
+			for (int idx = 0; idx < codeLines.Count; idx++)
+			{
+				string line = codeLines[idx];
+				var components = line.Split(' ');
+				if (components[0] == "LABEL")
+				{
+					if (components.Length != 2)
+					{
+						int lineIndex = 0;
+						foreach (int cnt in lineSpans.GetRange(0, idx + 1)) lineIndex += cnt;
+						throw new ParseException($"Bad LABEL statement\n\tat line {lineIndex}");
+					}
+					namedLabels[components[1]] = -1;
+				}
+			}
+
 			for (int idx = 0; idx < codeLines.Count; idx++)
 			{
 				string line = codeLines[idx];
@@ -148,6 +174,15 @@ namespace SuperBASIC
 						label.index = c.bytecode.Count;
 						labelStack.Push(label);
 						ParseExpression(c, components[1..], idx, lineSpans);
+						break;
+					case "LABEL":
+						if (components.Length != 2)
+						{
+							int lineIndex = 0;
+							foreach (int cnt in lineSpans.GetRange(0, idx + 1)) lineIndex += cnt;
+							throw new ParseException($"Bad LABEL statement\n\tat line {lineIndex}");
+						}
+						namedLabels[components[1]] = c.bytecode.Count;
 						break;
 					case "THEN":
 						// Role: Jumps to the far block if false
@@ -181,7 +216,7 @@ namespace SuperBASIC
 						c.bytecode.Add(new BasicNumber(runtime, library.nameResolution["GOTO"]));
 						c.bytecode.Add(new BasicNumber(runtime, 0f));
 						//4. Place the THEN destination after the GOTO
-						c.bytecode[label.index+2] = new BasicNumber(runtime, c.bytecode.Count);
+						c.bytecode[label.index+2] = new BasicNumber(runtime, (float)c.bytecode.Count);
 						break;
 					case "ENDIF":
 						//Role: Destination if depending on what is skipped
@@ -189,12 +224,12 @@ namespace SuperBASIC
 						if (label.ctrl == Controls.Else)
 						{
 							//Case 1: update the GOTO
-							c.bytecode[label.index + 1] = new BasicNumber(runtime, c.bytecode.Count);
+							c.bytecode[label.index + 1] = new BasicNumber(runtime, (float)c.bytecode.Count);
 						}
 						else if (label.ctrl == Controls.Then)
 						{
 							//Case 2: update the JZ
-							c.bytecode[label.index + 2] = new BasicNumber(runtime, c.bytecode.Count);
+							c.bytecode[label.index + 2] = new BasicNumber(runtime, (float)c.bytecode.Count);
 						} 
 						else 
 						{ 
@@ -214,6 +249,11 @@ namespace SuperBASIC
 						ParseExpression(c, components, idx, lineSpans);
 					break;
 				}
+			}
+
+			foreach(var lbl in positionedLabels)
+			{
+				c.bytecode[lbl.Item2] = new BasicNumber(runtime, (float)namedLabels[lbl.Item1]);
 			}
 			return c;
 		}
