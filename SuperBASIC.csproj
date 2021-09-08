@@ -5,6 +5,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;MEMORY</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Update="Test.basic">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

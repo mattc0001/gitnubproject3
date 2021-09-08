@@ -16,6 +16,7 @@ namespace SuperBASIC
 #endif
 				lib.AddFunction(new Functions.Print(), 1, "PRINT");
 				lib.AddFunction(new Functions.Multiply(), 2, "MULTIPLY");
+				lib.AddFunction(new Functions.Add(), 2, "ADD");
 				lib.AddFunction(new Functions.Compare(), 2, "COMPARE");
 				lib.AddFunction(new Functions.JumpZero(), 2, "JZ");
 				lib.AddFunction(new Functions.Goto(), 1, "GOTO");

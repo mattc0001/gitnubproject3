@@ -230,9 +230,9 @@ namespace SuperBASIC
 						{
 							//Case 2: update the JZ
 							c.bytecode[label.index + 2] = new BasicNumber(runtime, (float)c.bytecode.Count);
-						} 
-						else 
-						{ 
+						}
+						else
+						{
 							int lineIndex = 0;
 							foreach (int cnt in lineSpans.GetRange(0, idx + 1)) lineIndex += cnt;
 							throw new ParseException($"Orphaned ENDIF\n\tat line {lineIndex}");
@@ -243,6 +243,43 @@ namespace SuperBASIC
 							int lineIndex = 0;
 							foreach (int cnt in lineSpans.GetRange(0, idx + 1)) lineIndex += cnt;
 							throw new ParseException($"Orphaned ENDIF despite THEN\n\tat line {lineIndex}");
+						}
+						break;
+					case "WHILE":
+						// Role: manages the expression
+						// 1. Deal with expression
+						label.ctrl = Controls.While;
+						label.index = c.bytecode.Count;
+						labelStack.Push(label);
+						ParseExpression(c, components[1..], idx, lineSpans);
+						// 2. Adds the label to update the destination
+						label.ctrl = Controls.Wend;
+						label.index = c.bytecode.Count;
+						labelStack.Push(label);
+						// 3. Adds the jumper
+						c.bytecode.Add(new BasicNumber(runtime, library.nameResolution["JZ"]));
+						c.bytecode.Add(new BasicNumber(runtime));
+						c.bytecode.Add(new BasicNumber(runtime, 0f));
+						break;
+					case "WEND":
+						//Role: Destination if depending on what is skipped
+						var labelA = labelStack.Pop();
+						if (labelA.ctrl == Controls.Wend)
+						{
+
+							label = labelStack.Pop();
+							if (label.ctrl == Controls.While)
+							{
+								c.bytecode.Add(new BasicNumber(runtime, library.nameResolution["GOTO"]));
+								c.bytecode.Add(new BasicNumber(runtime, (float)label.index));
+								c.bytecode[labelA.index + 2] = new BasicNumber(runtime, (float)c.bytecode.Count);
+							}
+						}
+						else
+						{
+							int lineIndex = 0;
+							foreach (int cnt in lineSpans.GetRange(0, idx + 1)) lineIndex += cnt;
+							throw new ParseException($"Orphaned WEND\n\tat line {lineIndex}");
 						}
 						break;
 					default:
