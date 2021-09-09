@@ -262,7 +262,7 @@ namespace SuperBASIC
 						c.bytecode.Add(new BasicNumber(runtime, 0f));
 						break;
 					case "WEND":
-						//Role: Destination if depending on what is skipped
+						//Role: Destination setting and loop
 						var labelA = labelStack.Pop();
 						if (labelA.ctrl == Controls.Wend)
 						{
