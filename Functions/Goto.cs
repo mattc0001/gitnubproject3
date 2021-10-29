@@ -10,7 +10,7 @@ namespace SuperBASIC.Functions
 		{
 			// Substract its own arity +1
 			arguments[0].runtime.pc = (int)arguments[0] - 2;
-			return 0f;
+			return arguments[0].runtime.register;
 		}
 	}
 	class JumpZero : IFunction
@@ -20,7 +20,7 @@ namespace SuperBASIC.Functions
 			if(arguments[0] == 0)
 				// Substract its own arity +1
 				arguments[1].runtime.pc = (int)arguments[1] - 3;
-			return 0f;
+			return arguments[0].runtime.register;
 		}
 	}
 }
