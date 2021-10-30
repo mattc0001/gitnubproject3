@@ -6,7 +6,7 @@ namespace SuperBASIC
 {
 	class Runtime
 	{
-		float register;
+		public float register;
 		internal Library lib;
 		Bytecode code;
 		internal int pc = 0;
